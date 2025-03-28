@@ -34,19 +34,19 @@ type InfluxDBClient struct {
 }
 
 type Message struct {
-	State                  string
-	CustomerID             uuid.UUID
-	CustomerName           string
-	SiteID                 uuid.UUID
-	SiteName               string
-	Gateway                string
-	Controller             string
-	DeviceType             string
-	ControllerSerialNumber string
-	DeviceName             string
-	DeviceSerialNumber     string
-	Data                   map[string]any
-	Timestamp              time.Time
+	State                string
+	CustomerID           uuid.UUID
+	CustomerName         string
+	SiteID               uuid.UUID
+	SiteName             string
+	Gateway              string
+	Controller           string
+	DeviceType           string
+	ControllerIdentifier string
+	DeviceName           string
+	DeviceIdentifier     string
+	Data                 map[string]any
+	Timestamp            time.Time
 }
 
 // NewInfluxDBClient creates a new InfluxDB client
@@ -134,9 +134,9 @@ func (c *InfluxDBClient) WriteData(data Message) error {
 	tags["gateway"] = getGatewayTag(data.Gateway)
 	tags["controller"] = getControllerTag(data.Controller)
 	tags["device_type"] = getDeviceTypeTag(data.DeviceType)
-	tags["controller_serial_number"] = getControllerSerialNumberTag(data.ControllerSerialNumber)
+	tags["controller_identifier"] = getControllerIdentifierTag(data.ControllerIdentifier)
 	tags["device_name"] = getDeviceNameTag(data.DeviceName)
-	tags["device_serial_number"] = getDeviceSerialNumberTag(data.DeviceSerialNumber)
+	tags["device_identifier"] = getDeviceIdentifierTag(data.DeviceIdentifier)
 
 	switch data.State {
 	case "Pre":
@@ -190,7 +190,7 @@ func (c *InfluxDBClient) ReadData(query string) ([]Message, error) {
 	// 	// Extract tags from the record
 	// 	tags := make(map[string]string)
 	// 	for key, value := range record.Values() {
-	// 		if key == "customer" || key == "site" || key == "gateway" || key == "controller" || key == "device_type" || key == "controller_serial_number" || key == "device_name" || key == "device_serial_number" {
+	// 		if key == "customer" || key == "site" || key == "gateway" || key == "controller" || key == "device_type" || key == "controller_identifier" || key == "device_name" || key == "device_identifier" {
 	// 			if strValue, ok := value.(string); ok {
 	// 				tags[key] = strValue
 	// 			}
@@ -205,9 +205,9 @@ func (c *InfluxDBClient) ReadData(query string) ([]Message, error) {
 	// 		Gateway:                tags["gateway"],
 	// 		Controller:             tags["controller"],
 	// 		DeviceType:             tags["device_type"],
-	// 		ControllerSerialNumber: tags["controller_serial_number"],
+	// 		ControllerIdentifier: tags["controller_identifier"],
 	// 		DeviceName:             tags["device_name"],
-	// 		DeviceSerialNumber:     tags["device_serial_number"],
+	// 		DeviceIdentifier:     tags["device_identifier"],
 	// 		Data:                   data,
 	// 		Timestamp:              record.Time(),
 	// 	}
@@ -278,12 +278,12 @@ func getDeviceTypeTag(deviceType string) string {
 	return deviceType
 }
 
-func getControllerSerialNumberTag(controllerSerialNumber string) string {
-	if controllerSerialNumber == "" {
+func getControllerIdentifierTag(controllerIdentifier string) string {
+	if controllerIdentifier == "" {
 		return "Unknown controller serial number"
 	}
 
-	return controllerSerialNumber
+	return controllerIdentifier
 }
 
 func getDeviceNameTag(deviceName string) string {
@@ -294,12 +294,12 @@ func getDeviceNameTag(deviceName string) string {
 	return deviceName
 }
 
-func getDeviceSerialNumberTag(deviceSerialNumber string) string {
-	if deviceSerialNumber == "" {
+func getDeviceIdentifierTag(deviceIdentifier string) string {
+	if deviceIdentifier == "" {
 		return "Unknown device serial number"
 	}
 
-	return deviceSerialNumber
+	return deviceIdentifier
 }
 
 func (c *InfluxDBClient) logWriterInfo(message Message) {
@@ -308,11 +308,11 @@ func (c *InfluxDBClient) logWriterInfo(message Message) {
 	gateway := message.Gateway
 	controller := message.Controller
 	deviceType := message.DeviceType
-	controllerSerialNumber := message.ControllerSerialNumber
+	controllerIdentifier := message.ControllerIdentifier
 	deviceName := message.DeviceName
-	deviceSerialNumber := message.DeviceSerialNumber
+	deviceIdentifier := message.DeviceIdentifier
 
-	c.Logger.Info(fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s :: %s", gateway, customer, siteName, controller, controllerSerialNumber, deviceType, deviceSerialNumber, deviceName))
+	c.Logger.Info(fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s :: %s", gateway, customer, siteName, controller, controllerIdentifier, deviceType, deviceIdentifier, deviceName))
 }
 
 func (c *InfluxDBClient) logWriterDebug(message Message) {
@@ -321,11 +321,11 @@ func (c *InfluxDBClient) logWriterDebug(message Message) {
 	gateway := message.Gateway
 	controller := message.Controller
 	deviceType := message.DeviceType
-	controllerSerialNumber := message.ControllerSerialNumber
+	controllerIdentifier := message.ControllerIdentifier
 	deviceName := message.DeviceName
-	deviceSerialNumber := message.DeviceSerialNumber
+	deviceIdentifier := message.DeviceIdentifier
 
-	loggerMsg := fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s :: %s", gateway, customer, siteName, controller, controllerSerialNumber, deviceType, deviceSerialNumber, deviceName)
+	loggerMsg := fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s :: %s", gateway, customer, siteName, controller, controllerIdentifier, deviceType, deviceIdentifier, deviceName)
 
 	if message.State != "" {
 		loggerMsg = fmt.Sprintf("%s :: %s", loggerMsg, message.State)
