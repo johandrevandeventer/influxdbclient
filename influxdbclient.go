@@ -39,7 +39,6 @@ type Message struct {
 	CustomerName         string
 	SiteID               uuid.UUID
 	SiteName             string
-	Gateway              string
 	Controller           string
 	DeviceType           string
 	ControllerIdentifier string
@@ -131,7 +130,6 @@ func (c *InfluxDBClient) WriteData(data Message) error {
 	tags["customer"] = getCustomerTag(data.CustomerName)
 	tags["siteID"] = getSiteIDTag(data.SiteID)
 	tags["site"] = getSiteNameTag(data.SiteName)
-	tags["gateway"] = getGatewayTag(data.Gateway)
 	tags["controller"] = getControllerTag(data.Controller)
 	tags["device_type"] = getDeviceTypeTag(data.DeviceType)
 	tags["controller_identifier"] = getControllerIdentifierTag(data.ControllerIdentifier)
@@ -173,52 +171,6 @@ func (c *InfluxDBClient) ReadData(query string) ([]Message, error) {
 
 	var messages []Message
 
-	fmt.Println(result)
-
-	// Process the query results
-	// for result.Next() {
-	// 	record := result.Record()
-
-	// 	// Extract fields and tags from the record
-	// 	data := make(map[string]interface{})
-	// 	for key, value := range record.Values() {
-	// 		if key != "time" && key != "result" && key != "table" {
-	// 			data[key] = value
-	// 		}
-	// 	}
-
-	// 	// Extract tags from the record
-	// 	tags := make(map[string]string)
-	// 	for key, value := range record.Values() {
-	// 		if key == "customer" || key == "site" || key == "gateway" || key == "controller" || key == "device_type" || key == "controller_identifier" || key == "device_name" || key == "device_identifier" {
-	// 			if strValue, ok := value.(string); ok {
-	// 				tags[key] = strValue
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// Create a Message struct from the record
-	// 	message := Message{
-	// 		State:                  tags["state"],
-	// 		CustomerName:           tags["customer"],
-	// 		SiteName:               tags["site"],
-	// 		Gateway:                tags["gateway"],
-	// 		Controller:             tags["controller"],
-	// 		DeviceType:             tags["device_type"],
-	// 		ControllerIdentifier: tags["controller_identifier"],
-	// 		DeviceName:             tags["device_name"],
-	// 		DeviceIdentifier:     tags["device_identifier"],
-	// 		Data:                   data,
-	// 		Timestamp:              record.Time(),
-	// 	}
-
-	// 	messages = append(messages, message)
-	// }
-
-	// if result.Err() != nil {
-	// 	return nil, fmt.Errorf("error iterating through query results: %w", result.Err())
-	// }
-
 	return messages, nil
 }
 
@@ -252,14 +204,6 @@ func getSiteNameTag(siteName string) string {
 	}
 
 	return siteName
-}
-
-func getGatewayTag(gateway string) string {
-	if gateway == "" {
-		return "Unknown gateway"
-	}
-
-	return gateway
 }
 
 func getControllerTag(controller string) string {
@@ -305,27 +249,25 @@ func getDeviceIdentifierTag(deviceIdentifier string) string {
 func (c *InfluxDBClient) logWriterInfo(message Message) {
 	customer := message.CustomerName
 	siteName := message.SiteName
-	gateway := message.Gateway
 	controller := message.Controller
 	deviceType := message.DeviceType
 	controllerIdentifier := message.ControllerIdentifier
 	deviceName := message.DeviceName
 	deviceIdentifier := message.DeviceIdentifier
 
-	c.Logger.Info(fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s :: %s", gateway, customer, siteName, controller, controllerIdentifier, deviceType, deviceIdentifier, deviceName))
+	c.Logger.Info(fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s", customer, siteName, controller, controllerIdentifier, deviceType, deviceIdentifier, deviceName))
 }
 
 func (c *InfluxDBClient) logWriterDebug(message Message) {
 	customer := message.CustomerName
 	siteName := message.SiteName
-	gateway := message.Gateway
 	controller := message.Controller
 	deviceType := message.DeviceType
 	controllerIdentifier := message.ControllerIdentifier
 	deviceName := message.DeviceName
 	deviceIdentifier := message.DeviceIdentifier
 
-	loggerMsg := fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s :: %s", gateway, customer, siteName, controller, controllerIdentifier, deviceType, deviceIdentifier, deviceName)
+	loggerMsg := fmt.Sprintf("%s :: %s :: %s :: %s :: %s :: %s :: %s", customer, siteName, controller, controllerIdentifier, deviceType, deviceIdentifier, deviceName)
 
 	if message.State != "" {
 		loggerMsg = fmt.Sprintf("%s :: %s", loggerMsg, message.State)
